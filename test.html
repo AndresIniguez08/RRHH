@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Test Auth RRHH</title>
+  </head>
+  <body>
+    <h1>Test Auth RRHH (Cookie HttpOnly)</h1>
+
+    <button onclick="login()">Login</button>
+    <button onclick="me()">Auth Me</button>
+    <button onclick="logout()">Logout</button>
+
+    <pre id="output"></pre>
+
+    <script>
+      const SUPABASE_URL = "https://nbvgeifvzgyvlkpqeoef.supabase.co";
+      const ANON_KEY = "PEGA_ACA_TU_ANON_KEY"; // <-- dejalo como lo tenías, lo recorté por seguridad
+
+      const out = document.getElementById("output");
+
+      function log(data) {
+        out.textContent = JSON.stringify(data, null, 2);
+      }
+
+      async function login() {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/auth-login`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json", // ✅ IMPORTANTE
+            apikey: ANON_KEY, // ✅ suficiente
+          },
+          body: JSON.stringify({
+            username: "admin",
+            password: "123456",
+          }),
+        });
+
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { raw: text };
+        }
+        log({ status: res.status, data });
+      }
+
+      async function me() {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/auth-me`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            apikey: ANON_KEY, // ✅ SIN Authorization para evitar preflight con *
+          },
+        });
+
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { raw: text };
+        }
+        log({ status: res.status, data });
+      }
+
+      async function logout() {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/auth-logout`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            apikey: ANON_KEY, // ✅ SIN Authorization para evitar preflight con *
+          },
+        });
+
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { raw: text };
+        }
+        log({ status: res.status, data });
+      }
+    </script>
+  </body>
+</html>
