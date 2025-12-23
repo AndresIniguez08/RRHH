@@ -1,5 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import bcrypt from "https://esm.sh/bcryptjs@2.4.3";
+import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
 
 export async function onRequestPost({ request, env }) {
   const origin = request.headers.get("Origin");
