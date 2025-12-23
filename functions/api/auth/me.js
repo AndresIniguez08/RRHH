@@ -3,17 +3,29 @@ import { createClient } from "@supabase/supabase-js";
 const COOKIE_NAME = "ga_rrhh_session";
 
 function isAllowedOrigin(origin) {
-  if (!origin) return false;
+  // Si no hay Origin, no es una request CORS típica (mismo sitio o herramientas).
+  // La dejamos pasar.
+  if (!origin) return true;
+
   if (origin === "http://127.0.0.1:5500") return true;
   if (origin === "http://localhost:5500") return true;
+
   try {
     const u = new URL(origin);
     if (u.hostname.endsWith(".pages.dev")) return true;
   } catch {}
+
   return false;
 }
 
 function corsHeaders(origin) {
+  // Sin Origin: no es CORS -> no hace falta Access-Control-Allow-Origin
+  if (!origin) {
+    return {
+      Vary: "Origin",
+    };
+  }
+
   const allowOrigin = isAllowedOrigin(origin) ? origin : "";
   return {
     "Access-Control-Allow-Origin": allowOrigin,
@@ -25,8 +37,7 @@ function corsHeaders(origin) {
 }
 
 function json(body, status, origin, extraHeaders = {}) {
-  const cors = corsHeaders(origin);
-  if (!cors["Access-Control-Allow-Origin"]) {
+  if (origin && !isAllowedOrigin(origin)) {
     return new Response(
       JSON.stringify({ ok: false, error: "Origin not allowed" }),
       {
@@ -35,10 +46,12 @@ function json(body, status, origin, extraHeaders = {}) {
       }
     );
   }
+  const cors = corsHeaders(origin);
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       ...cors,
+      ...(origin ? { "Access-Control-Allow-Credentials": "true" } : {}),
       "Content-Type": "application/json; charset=utf-8",
       ...extraHeaders,
     },
