@@ -9,9 +9,7 @@ export async function onRequest(context) {
       url: request.url,
     }),
     {
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json; charset=utf-8" },
     }
   );
 }
